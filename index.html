@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <style>
+        /* General Page Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffe4e6;
+            /* Soft pink background */
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            /* Prevents scrollbars when hearts fly */
+            position: relative;
+        }
+
+        /* The White Card */
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            /* Important: Z-index must be higher than the hearts */
+            z-index: 20;
+            position: relative;
+        }
+
+        /* The Penguin Image */
+        .penguin-img {
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Text Styling */
+        h1 {
+            color: #000;
+            font-size: 24px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        /* Button Container */
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            height: 60px;
+        }
+
+        /* Shared Button Styles */
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Yes Button */
+        #yesBtn {
+            background-color: #ff4d6d;
+            color: white;
+        }
+
+        #yesBtn:hover {
+            background-color: #d63350;
+        }
+
+        /* No Button */
+        #noBtn {
+            background-color: #e5e7eb;
+            color: #374151;
+            position: relative;
+            z-index: 30;
+            /* Ensure No button stays on top when moving */
+        }
+
+        /* --- NEW FLOATING HEARTS STYLING --- */
+        .heart {
+            position: fixed;
+            /* Change 1: Darker "typical heart" red color */
+            color: #c62828;
+            user-select: none;
+            /* Important: Z-index lower than the card so they stay behind it */
+            z-index: 10;
+            top: 0;
+            left: 0;
+            /* Use CSS variables for dynamic movement */
+            transform: translate(var(--startX), var(--startY)) scale(0);
+            animation: floatRandom 6s linear forwards;
+        }
+
+        /* Change 2: Animation moves from start coordinates to end coordinates */
+        @keyframes floatRandom {
+            0% {
+                transform: translate(var(--startX), var(--startY)) scale(0.5);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                /* Move to the calculated end point far off-screen */
+                transform: translate(var(--endX), var(--endY)) scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <img src="penguins.png" alt="Cute Penguins" class="penguin-img">
+
+        <h1 id="question">Arya, will you be my valentine?</h1>
+
+        <div class="btn-container">
+            <button id="yesBtn" onclick="acceptLove()">Yes</button>
+            <button id="noBtn" onmouseover="moveButton()" ontouchstart="moveButton()">No</button>
+        </div>
+    </div>
+
+    <script>
+        let yesButtonSize = 16;
+        let yesButtonPadding = 12;
+
+        function moveButton() {
+            const noBtn = document.getElementById('noBtn');
+            const yesBtn = document.getElementById('yesBtn');
+
+            // Generate random coordinates within the viewport
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+
+            // Use fixed positioning so it can go anywhere on screen
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+
+            // Make Yes button bigger
+            yesButtonSize += 5;
+            yesButtonPadding += 3;
+            yesBtn.style.fontSize = `${yesButtonSize}px`;
+            yesBtn.style.padding = `${yesButtonPadding}px ${yesButtonPadding * 2}px`;
+        }
+
+        function acceptLove() {
+            document.getElementById('question').innerText = "YAY! I LOVE YOU!";
+            document.querySelector('.btn-container').style.display = 'none';
+
+            // Start the advanced heart animation
+            createHeartsAdvanced();
+        }
+
+        // --- NEW ADVANCED HEART CREATION FUNCTION ---
+        function createHeartsAdvanced() {
+            const card = document.querySelector('.card');
+            // Get the position and size of the central card
+            const cardRect = card.getBoundingClientRect();
+            const buffer = 60; // Extra space around the card to avoid
+
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = '❤️';
+
+                // 1. Calculate Start Position (Avoiding the center card)
+                let startX, startY;
+                // Randomly choose one of the 4 sides surrounding the card
+                const side = Math.floor(Math.random() * 4);
+
+                switch (side) {
+                    case 0: // Top area
+                        startX = Math.random() * window.innerWidth;
+                        startY = Math.random() * (cardRect.top - buffer);
+                        break;
+                    case 1: // Bottom area
+                        startX = Math.random() * window.innerWidth;
+                        startY = (cardRect.bottom + buffer) + Math.random() * (window.innerHeight - cardRect.bottom - buffer);
+                        break;
+                    case 2: // Left area
+                        startX = Math.random() * (cardRect.left - buffer);
+                        startY = Math.random() * window.innerHeight;
+                        break;
+                    case 3: // Right area
+                        startX = (cardRect.right + buffer) + Math.random() * (window.innerWidth - cardRect.right - buffer);
+                        startY = Math.random() * window.innerHeight;
+                        break;
+                }
+
+                // 2. Calculate End Position (Somewhere far off-screen randomly)
+                // We multiply window size by 2 to ensure they fly way off-screen
+                const endX = (Math.random() - 0.5) * window.innerWidth * 2 + startX;
+                const endY = (Math.random() - 0.5) * window.innerHeight * 2 + startY;
+
+                // 3. Apply positions to CSS variables
+                heart.style.setProperty('--startX', `${startX}px`);
+                heart.style.setProperty('--startY', `${startY}px`);
+                heart.style.setProperty('--endX', `${endX}px`);
+                heart.style.setProperty('--endY', `${endY}px`);
+
+                // Randomize size and rotation slightly for variety
+                const size = Math.random() * 25 + 15;
+                heart.style.fontSize = `${size}px`;
+                heart.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                // Randomize animation speed
+                heart.style.animationDuration = (Math.random() * 3 + 5) + "s";
+
+                document.body.appendChild(heart);
+
+                // Clean up old hearts
+                setTimeout(() => {
+                    heart.remove();
+                }, 8000);
+            }, 150); // Spawn a heart every 150ms
+        }
+    </script>
+
+</body>
+
+</html>
